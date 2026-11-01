@@ -1,0 +1,12 @@
+      - name: AKSDesk patch
+        shell: bash
+        run: |
+          set -e
+          cfg=libs/hbb_common/src/config.rs
+          sed -i 's|pub const RENDEZVOUS_SERVERS.*|pub const RENDEZVOUS_SERVERS: \&[\&str] = \&["rd.24kassy.ru"];|' $cfg
+          sed -i 's|pub const RS_PUB_KEY.*|pub const RS_PUB_KEY: \&str = "kWBTO4VwZcy59t0g470cnC87LwuRGcj3RLIrrZH8m8s=";|' $cfg
+          sed -i 's|RwLock::new("RustDesk"|RwLock::new("AKSDesk"|' $cfg
+          sed -i 's|return format!("http://{}:{}", s, config::RENDEZVOUS_PORT - 2);|return format!("https://{}", s);|' src/common.rs
+          sed -i 's|"RustDesk Remote Desktop"|"AKSDesk Remote Desktop"|; s|VALUE "ProductName", "RustDesk"|VALUE "ProductName", "AKSDesk"|' flutter/windows/runner/Runner.rc
+          curl -sL -o flutter/windows/runner/resources/app_icon.ico https://rd.24kassy.ru/aksdesk.ico
+          grep -c AKSDesk $cfg
