@@ -1,3 +1,0 @@
-test: ${{ env.FLUTTER_VERSION }}
-sed -i 's|a|b|' file
-run: $VCPKG_ROOT/vcpkg install --triplet x64-windows-static
