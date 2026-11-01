@@ -1,0 +1,73 @@
+name: AKSDesk Build
+on: {push: {branches: [aksdesk]}, workflow_dispatch:}
+env:
+  VCPKG_COMMIT_ID: "9e593bb18ea69cc5095e012465dcd675a822ed0d"
+jobs:
+  bridge:
+    uses: ./.github/workflows/bridge.yml
+  topmost:
+    uses: ./.github/workflows/third-party-RustDeskTempTopMostWindow.yml
+    with:
+      upload-artifact: true
+      target: windows-2022
+      configuration: Release
+      platform: x64
+      target_version: Windows10
+  build:
+    needs: [topmost, bridge]
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with: {submodules: recursive}
+      - name: AKSDesk patch
+        shell: bash
+        run: |
+          cfg=libs/hbb_common/src/config.rs
+          sed -i -e 's|pub const RENDEZVOUS_SERVERS.*|pub const RENDEZVOUS_SERVERS: \&[\&str] = \&["rd.24kassy.ru"];|' -e 's|pub const RS_PUB_KEY.*|pub const RS_PUB_KEY: \&str = "kWBTO4VwZcy59t0g470cnC87LwuRGcj3RLIrrZH8m8s=";|' -e 's|RwLock::new("RustDesk"|RwLock::new("AKSDesk"|' $cfg
+          sed -i 's|return format!("http://{}:{}", s, config::RENDEZVOUS_PORT - 2);|return format!("https://{}", s);|' src/common.rs
+          sed -i -e 's|"RustDesk Remote Desktop"|"AKSDesk Remote Desktop"|' -e 's|VALUE "ProductName", "RustDesk"|VALUE "ProductName", "AKSDesk"|' flutter/windows/runner/Runner.rc
+          curl -sL -o flutter/windows/runner/resources/app_icon.ico https://rd.24kassy.ru/aksdesk.ico
+          grep -c AKSDesk $cfg
+      - uses: actions/download-artifact@v4
+        with: {name: bridge-artifact, path: ./}
+      - uses: KyleMayes/install-llvm-action@v2
+        with: {version: "15.0.6"}
+      - uses: subosito/flutter-action@v2
+        with: {flutter-version: "3.24.5", architecture: x64}
+      - name: Engine + flutter patch
+        shell: bash
+        run: |
+          flutter precache --windows
+          curl -sL -o e.zip https://github.com/rustdesk/engine/releases/download/main/windows-x64-release.zip
+          unzip -qo e.zip -d e
+          cp -rf e/* "$FLUTTER_ROOT/bin/cache/artifacts/engine/windows-x64-release/"
+          cp .github/patches/flutter_3.24.4_dropdown_menu_enableFilter.diff "$FLUTTER_ROOT/"
+          cd "$FLUTTER_ROOT" && git apply flutter_3.24.4_dropdown_menu_enableFilter.diff
+      - uses: dtolnay/rust-toolchain@stable
+        with: {toolchain: "1.75"}
+      - uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: C:\vcpkg
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
+      - name: vcpkg install
+        shell: bash
+        env: {VCPKG_DEFAULT_HOST_TRIPLET: x64-windows-static}
+        run: $VCPKG_ROOT/vcpkg install --triplet x64-windows-static --x-install-root="$VCPKG_ROOT/installed"
+      - name: Build
+        run: |
+          python3 .\build.py --portable --flutter --skip-portable-pack --hwcodec --vram
+          mv ./flutter/build/windows/x64/runner/Release ./rustdesk
+      - uses: actions/download-artifact@v4
+        with: {name: topmostwindow-artifacts-x64, path: ./rustdesk}
+      - name: Pack installer
+        shell: bash
+        run: |
+          sed -i '/dpiAware/d' res/manifest.xml
+          pushd ./libs/portable
+          pip3 install -r requirements.txt
+          python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/rustdesk.exe
+          popd
+          mkdir out
+          mv ./target/release/rustdesk-portable-packer.exe out/AKSDesk-1.5.1-x86_64.exe
+      - uses: actions/upload-artifact@v4
+        with: {name: AKSDesk-installer, path: out}
