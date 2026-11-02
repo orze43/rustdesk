@@ -314,7 +314,22 @@ class _ConnectionPageState extends State<ConnectionPage>
                 Flexible(child: _buildRemoteIDTextField(context)),
               ],
             ).marginOnly(top: 22),
-            SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.only(top: 16, right: 12, bottom: 12),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 360),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.asset(
+                      'assets/aksdesk-banner.png',
+                      fit: BoxFit.contain,
+                      semanticLabel: 'АКСАРТ — кассы, весы, автоматизация. +7 (391) 2-141-161',
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Divider().paddingOnly(right: 12),
             Expanded(child: PeerTabPage()),
           ],
@@ -519,21 +534,32 @@ class _ConnectionPageState extends State<ConnectionPage>
               padding: const EdgeInsets.only(top: 13.0),
               child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                 SizedBox(
-                  height: 28.0,
-                  child: ElevatedButton(
+                  height: 38.0,
+                  child: ElevatedButton.icon(
                     onPressed: () {
                       onConnect();
                     },
-                    child: Text(translate("Connect")),
+                    icon: const Icon(Icons.link, size: 18),
+                    label: Text(
+                      translate("Connect"),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  height: 28.0,
-                  width: 28.0,
+                  height: 38.0,
+                  width: 38.0,
                   decoration: BoxDecoration(
                     border: Border.all(color: Theme.of(context).dividerColor),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
                     child: StatefulBuilder(
