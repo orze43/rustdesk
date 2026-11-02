@@ -28,6 +28,8 @@ jobs:
           cfg=libs/hbb_common/src/config.rs
           sed -i -e 's|pub const RENDEZVOUS_SERVERS.*|pub const RENDEZVOUS_SERVERS: \&[\&str] = \&["rd.24kassy.ru"];|' -e 's|pub const RS_PUB_KEY.*|pub const RS_PUB_KEY: \&str = "kWBTO4VwZcy59t0g470cnC87LwuRGcj3RLIrrZH8m8s=";|' -e 's|RwLock::new("RustDesk"|RwLock::new("AKSDesk"|' $cfg
           sed -i 's|return format!("http://{}:{}", s, config::RENDEZVOUS_PORT - 2);|return format!("https://{}", s);|' src/common.rs
+          sed -i 's|"https://admin.rustdesk.com".to_owned()|"https://rd.24kassy.ru".to_owned()|' src/common.rs
+          grep -c 'rd.24kassy.ru' src/common.rs
           sed -i -e 's|"RustDesk Remote Desktop"|"AKSDesk Remote Desktop"|' -e 's|VALUE "ProductName", "RustDesk"|VALUE "ProductName", "AKSDesk"|' flutter/windows/runner/Runner.rc
           curl -sL -o flutter/windows/runner/resources/app_icon.ico https://rd.24kassy.ru/aksdesk.ico
           grep -c AKSDesk $cfg
