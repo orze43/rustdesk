@@ -18,6 +18,13 @@ jobs:
       target_version: Windows10
   build:
     needs: [topmost, bridge]
+    strategy:
+      matrix:
+        include:
+          - id: full
+            name: Full
+          - id: incoming
+            name: Incoming
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +38,10 @@ jobs:
           sed -i 's|"https://admin.rustdesk.com".to_owned()|"https://rd.24kassy.ru".to_owned()|' src/common.rs
           grep -c 'rd.24kassy.ru' src/common.rs
           sed -i -e 's|"RustDesk Remote Desktop"|"AKSDesk Remote Desktop"|' -e 's|VALUE "ProductName", "RustDesk"|VALUE "ProductName", "AKSDesk"|' flutter/windows/runner/Runner.rc
-          curl -sL -o flutter/windows/runner/resources/app_icon.ico https://rd.24kassy.ru/aksdesk.ico
+          if [ "${{ matrix.id }}" = "incoming" ]; then
+            sed -i "s|customClientConfig: ''|customClientConfig: '{\"conn-type\":\"incoming\"}'|" flutter/lib/models/native_model.dart
+            grep -c '"conn-type":"incoming"' flutter/lib/models/native_model.dart
+          fi
           grep -c AKSDesk $cfg
       - uses: actions/download-artifact@v4
         with: {name: bridge-artifact, path: ./}
@@ -74,6 +84,8 @@ jobs:
           python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/AKSDesk.exe
           popd
           mkdir out
-          mv ./target/release/rustdesk-portable-packer.exe out/AKSDesk-1.5.1-x86_64.exe
+          mv ./target/release/rustdesk-portable-packer.exe "out/AKSDesk-${{ matrix.name }}-1.5.1-x86_64.exe"
       - uses: actions/upload-artifact@v4
-        with: {name: AKSDesk-installer, path: out}
+        with:
+          name: AKSDesk-${{ matrix.name }}-installer
+          path: out

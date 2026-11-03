@@ -32,7 +32,7 @@ class DesktopHomePage extends StatefulWidget {
   State<DesktopHomePage> createState() => _DesktopHomePageState();
 }
 
-const borderColor = Color(0xFF2F65BA);
+const borderColor = MyTheme.accent;
 
 class _DesktopHomePageState extends State<DesktopHomePage>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
@@ -92,6 +92,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       buildTip(context),
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
+      if (!isOutgoingOnly) buildSupportContacts(context),
       FutureBuilder<Widget>(
         future: Future.value(
             Obx(() => buildHelpCards(stateGlobal.updateUrl.value))),
@@ -129,7 +130,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     return ChangeNotifierProvider.value(
       value: gFFI.serverModel,
       child: Container(
-        width: isIncomingOnly ? 280.0 : 200.0,
+        width: 200.0,
         color: Theme.of(context).colorScheme.background,
         child: Stack(
           children: [
@@ -412,6 +413,15 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           ),
           if (!isOutgoingOnly)
             Text(
+              'Сообщите эти данные\nспециалисту для подключения',
+              overflow: TextOverflow.clip,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).textTheme.titleLarge?.color,
+                  ),
+            ),
+          if (!isOutgoingOnly) const SizedBox(height: 8),
+          if (!isOutgoingOnly)
+            Text(
               translate("desk_tip"),
               overflow: TextOverflow.clip,
               style: Theme.of(context).textTheme.bodySmall,
@@ -422,6 +432,72 @@ class _DesktopHomePageState extends State<DesktopHomePage>
               overflow: TextOverflow.clip,
               style: Theme.of(context).textTheme.bodySmall,
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSupportContacts(BuildContext context) {
+    final textColor = Theme.of(context).textTheme.titleLarge?.color;
+    final secondaryColor = textColor?.withOpacity(0.55);
+
+    Widget phone(String value) {
+      return SizedBox(
+        width: double.infinity,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget messenger(String asset, String label) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(asset, width: 28, height: 28),
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(fontSize: 11, color: textColor)),
+        ],
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Column(
+        children: [
+          ClipOval(
+            child: Image.asset(
+              'assets/support-logo.png',
+              width: 112,
+              height: 112,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Техническая поддержка',
+            style: TextStyle(fontSize: 12, color: secondaryColor),
+          ),
+          const SizedBox(height: 6),
+          phone('+7 (391) 2-141-161'),
+          const Divider(height: 28),
+          phone('+7 (923) 325-11-61'),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              messenger('assets/support-max.png', 'МАКС'),
+              messenger('assets/support-telegram.png', 'Telegram'),
+            ],
+          ),
         ],
       ),
     );

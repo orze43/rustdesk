@@ -76,6 +76,12 @@ class GroupModel {
     if (!await _getPeers(tmpPeers)) {
       return;
     }
+    for (final peer in tmpPeers) {
+      final alias = gFFI.abModel.find(peer.id)?.alias;
+      if (alias != null && alias.isNotEmpty) {
+        peer.alias = alias;
+      }
+    }
     deviceGroups.value = tmpDeviceGroups;
     // me first
     var index = tmpUsers

@@ -126,7 +126,7 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
               ),
             ).marginSymmetric(horizontal: em),
             Container(
-              width: isIncomingOnly ? 226 : null,
+              width: isIncomingOnly ? 158 : null,
               child: _buildConnStatusMsg(),
             ),
             // stop
@@ -314,22 +314,6 @@ class _ConnectionPageState extends State<ConnectionPage>
                 Flexible(child: _buildRemoteIDTextField(context)),
               ],
             ).marginOnly(top: 22),
-            Padding(
-              padding: const EdgeInsets.only(top: 16, right: 12, bottom: 12),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 360),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Image.asset(
-                      'assets/aksdesk-banner.png',
-                      fit: BoxFit.contain,
-                      semanticLabel: 'АКСАРТ — кассы, весы, автоматизация. +7 (391) 2-141-161',
-                    ),
-                  ),
-                ),
-              ),
-            ),
             Divider().paddingOnly(right: 12),
             Expanded(child: PeerTabPage()),
           ],
