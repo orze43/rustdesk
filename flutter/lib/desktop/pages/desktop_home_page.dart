@@ -89,9 +89,27 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         alignment: Alignment.center,
         child: loadLogo(),
       ),
-      buildTip(context),
-      if (!isOutgoingOnly) buildIDBoard(context),
-      if (!isOutgoingOnly) buildPasswordBoard(context),
+      if (isIncomingOnly)
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: buildTip(context)),
+            SizedBox(
+              width: 290,
+              child: Column(
+                children: [
+                  buildIDBoard(context),
+                  buildPasswordBoard(context),
+                ],
+              ),
+            ),
+          ],
+        )
+      else ...[
+        buildTip(context),
+        if (!isOutgoingOnly) buildIDBoard(context),
+        if (!isOutgoingOnly) buildPasswordBoard(context),
+      ],
       if (!isOutgoingOnly) buildSupportContacts(context),
       FutureBuilder<Widget>(
         future: Future.value(
@@ -130,7 +148,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     return ChangeNotifierProvider.value(
       value: gFFI.serverModel,
       child: Container(
-        width: 200.0,
+        width: isIncomingOnly ? 640.0 : 200.0,
         color: Theme.of(context).colorScheme.background,
         child: Stack(
           children: [
@@ -466,6 +484,49 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           const SizedBox(width: 4),
           Text(label, style: TextStyle(fontSize: 11, color: textColor)),
         ],
+      );
+    }
+
+    if (bind.isIncomingOnly()) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ClipOval(
+              child: Image.asset(
+                'assets/support-logo.png',
+                width: 112,
+                height: 112,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 32),
+            Expanded(
+              child: Column(
+                children: [
+                  Text(
+                    'Техническая поддержка',
+                    style: TextStyle(fontSize: 12, color: secondaryColor),
+                  ),
+                  const SizedBox(height: 6),
+                  phone('+7 (391) 2-141-161'),
+                  const Divider(height: 24),
+                  phone('+7 (923) 325-11-61'),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      messenger('assets/support-max.png', 'МАКС'),
+                      const SizedBox(width: 32),
+                      messenger('assets/support-telegram.png', 'Telegram'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       );
     }
 
